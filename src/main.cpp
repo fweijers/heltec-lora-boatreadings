@@ -1,9 +1,8 @@
-#include <Arduino.h>
-#include <Wire.h>
-#include <Seeed_BME280.h>
 #include <LoRaWan_APP.h>
+#include <Arduino.h>
+#include <Seeed_BME280.h>
+#include <Wire.h>
 #include "ttnparams.h"
-
 
 // === LoRaWAN instellingen ===
 uint32_t appTxDutyCycle = 180000; // Verzending elke 3 minuten 
@@ -29,6 +28,10 @@ BME280 bme280;
 #define trigPin GPIO5  // J2-9
 #define echoPin GPIO0  // J2-8
 
+// === Spanningsreferentie en deling ===
+#define ADC_VREF 2.383                 // 🔧 Gemeten referentiespanning van Heltec ADC-pin
+#define EXTERNAL_VOLTAGE_PIN ADC      // ADC pin
+#define EXTERNAL_DIVISION_FACTOR 6.00 // 🔧 Afgeleid uit 12.8 V / 2.133 V (jouw gemeten waarde)
 
 // === Ultrasoon meting ===
 long measureDistance() {
@@ -52,29 +55,23 @@ long measureDistance() {
   return (uint16_t)(duration * 0.034 / 2); // in cm
 }
 
-
-// === Spanningsdeler uitlezen met gemeten referentiespanning ===
-#define ADC_VREF 2.38  // 🔧 Gemeten referentiespanning, i.p.v. 3.3V
-#define EXTERNAL_VOLTAGE_PIN ADC
-#define EXTERNAL_VOLTAGE_R1 11500  // bovenste weerstand in spanningsdeler
-#define EXTERNAL_VOLTAGE_R2 4700   // onderste weerstand in spanningsdeler
-
+// === Spanningsdeler uitlezen met gemeten referentiespanning en factor ===
 uint16_t readExternalVoltage() {
-  delay(50);  // Tijd geven aan spanning
-  uint16_t raw = analogRead(EXTERNAL_VOLTAGE_PIN); // 12-bit waarde tussen 0-4095
+  delay(50);  // Tijd geven aan spanning stabilisatie
+  uint16_t raw = analogRead(EXTERNAL_VOLTAGE_PIN); // 12-bit waarde 0-4095
 
   Serial.print("🧪 Raw ADC: "); Serial.println(raw);
 
-  // Gebruik gemeten referentiespanning
-  float vMeasured = raw * (ADC_VREF / 4095.0);  // spanning op de ADC-pin
-  Serial.print("🔍 Gemeten op pin: "); Serial.print(vMeasured); Serial.println(" V");
+  // ADC spanning in volt
+  float vMeasured = raw * (ADC_VREF / 4095.0);
+  Serial.print("🔍 Gemeten op pin: "); Serial.print(vMeasured, 3); Serial.println(" V");
 
-  float vReal = vMeasured * ((EXTERNAL_VOLTAGE_R1 + EXTERNAL_VOLTAGE_R2) / (float)EXTERNAL_VOLTAGE_R2);
-  Serial.print("🔌 Teruggerekend: "); Serial.print(vReal); Serial.println(" V");
+  // Omrekenen naar accuspanning met delingsfactor
+  float vReal = vMeasured * EXTERNAL_DIVISION_FACTOR;
+  Serial.print("🔌 Teruggerekend: "); Serial.print(vReal, 3); Serial.println(" V");
 
   return (uint16_t)(vReal * 1000);  // millivolt
 }
-
 
 // === Payload voorbereiden ===
 static void prepareTxFrame(uint8_t port) {
@@ -170,3 +167,5 @@ void loop() {
       break;
   }
 }
+
+
