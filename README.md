@@ -14,6 +14,7 @@ Because electricy connections can break, or battery level can get too low, I nee
 No rain: the battery level slowly drops by a volt or so during night, and is slowly charged to nominal level during day, while the bilge water level stays the same.
 Rain: the bilge water level slowly rises until the battery level shows a sudden dip in voltage. After this, the bilge water level is back to nominal.
 
+<img width="2559" height="1571" alt="image" src="pics/rain.jpg" />
 
 
 # How is this built?
