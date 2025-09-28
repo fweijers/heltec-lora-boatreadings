@@ -8,3 +8,8 @@ reading sensors from my boat to determine bilge water level remotely
 Besides water level monitoring, this project also monitors the battery level, and (bonus) the air humidity, temperature and pressure.
 
 wel een leercurve, dat vs code en github
+
+
+Node Red in Home Assistant:
+TTN → MQTT → Node-RED → auto discovery in HA.
+
