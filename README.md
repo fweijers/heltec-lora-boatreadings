@@ -16,7 +16,7 @@ Because electricy connections can break, or battery level can get too low, I nee
 the battery level slowly drops by a volt or so during night, and is slowly charged to nominal level during day, while the bilge water level stays the same.
 ### Rain: 
 the bilge water level slowly rises until the battery level shows a sudden dip in voltage. After this, the bilge water level is back to nominal.
-<img width="800" height="600" alt="correlation" src="https://github.com/fweijers/heltec-lora-boatreadings/raw/main/pics/correlation.jpg" /> <img width="800" height="600" alt="correlation" src="https://github.com/fweijers/heltec-lora-boatreadings/raw/main/pics/correlation.jpg" />
+<img width="500" height="500" alt="correlation" src="https://github.com/fweijers/heltec-lora-boatreadings/raw/main/pics/correlation.jpg" /> <img width="500" height="500" alt="correlation" src="https://github.com/fweijers/heltec-lora-boatreadings/raw/main/pics/correlation.jpg" />
 
 
 
