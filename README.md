@@ -11,15 +11,13 @@ My bilge pump is fed by a 12V battery, which is charged by a small solar panel. 
 As long as there is enough sunshine, and no electricity connection is broken due to storm, rain or bad luck, the bilge pump automatically pumps rain water out of the boat. 
 Because electricy connections can break, or battery level can get too low, I needed to remotely measure the battery level and the bilge water level.
 
-## How does the measurement look like?
-##No rain: 
-during night, the battery level slowly drops by a volt or so. When the sun is out, it is slowly charged to nominal level during day, while the bilge water level stays the same.
+## So what do you see?
+### No rain:
+the battery level slowly drops by a volt or so during night, and is slowly charged to nominal level during day, while the bilge water level stays the same.
+### Rain: 
+the bilge water level slowly rises until the battery level shows a sudden dip in voltage. After this, the bilge water level is back to nominal.
+<img width="800" height="600" alt="correlation" src="https://github.com/fweijers/heltec-lora-boatreadings/raw/main/pics/correlation.jpg" /> <img width="800" height="600" alt="correlation" src="https://github.com/fweijers/heltec-lora-boatreadings/raw/main/pics/correlation.jpg" />
 
-##Rain: 
-the bilge water level in the boat slowly rises, this is seen by the "distance" getting lower, until the battery level shows a sudden dip in voltage when the bilge pump kicks in. After this happend, the bilge water level is back to nominal (distance = nominal again).
-
-
-![rain](https://github.com/user-attachments/assets/691e04c9-6ebb-45cb-835e-a7ef8f7fecb4)
 
 
 
