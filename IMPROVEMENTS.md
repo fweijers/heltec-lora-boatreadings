@@ -9,9 +9,9 @@ Prioritized ideas for this project. Items marked ✅ are already done in this re
 | 1 | ✅ Keep TTN keys out of git: `ttnparams.example.h` + `.gitignore` | `ttnparams.h` was tracked, so a real AppKey could be committed by accident | `include/`, `.gitignore` |
 | 2 | ✅ TTN payload decoder | Decode the 16-byte payload in TTN itself, so Node-RED receives readable JSON and no byte-math lives in the flow | `ttn/payload-formatter.js` |
 | 3 | ✅ README with photos, wiring, payload table | Makes the project reproducible | `README.md` |
-| 4 | ✅ Node-RED flow added. Still open: export the Home Assistant dashboard YAML | The Lovelace cards can't be rebuilt from the repo yet | `nodered/flow.json`, `homeassistant/` |
+| 4 | ✅ Node-RED flow and Home Assistant dashboard added | The whole chain can now be rebuilt from the repo | `nodered/`, `homeassistant/` |
 | 5 | Move `rain.PNG` from the repo root into `pics/` and compress the 3 MB photos (about 1600 px wide is plenty) | Faster README loading, smaller clone | `pics/` |
-| 6 | Add a `LICENSE` (for example MIT) | Without one, others may not reuse the project | `LICENSE` |
+| 6 | ✅ Public-domain license (The Unlicense) | Without a license others may not reuse the project | `LICENSE` |
 
 ## Firmware
 
@@ -51,3 +51,7 @@ Prioritized ideas for this project. Items marked ✅ are already done in this re
 | 23 | Use `<application-id>@ttn` in the MQTT topic instead of the `+` wildcard | TTN only allows reading your own application; a specific topic is clearer and survives stricter broker rules |
 | 24 | Add a *no uplink for N minutes* alert on `last_update` / `uplink_interval` | The flow already collects the data; only the alert is missing |
 | 25 | Publish `uplink_interval` with `retain: true` or give it `expire_after` in the discovery config | Prevents Home Assistant from showing an old value as current after a restart |
+| 26 | ✅ Draft alerts added; still to do: confirm thresholds and test them | Includes the case "voltage drops, level stays high" | `homeassistant/bilge-alerts.yaml` |
+| 27 | Document `sensor.bilge_waterpeil` (template sensor) in the repo | The dashboard depends on it, but its definition is not in the repo yet | `homeassistant/` |
+| 28 | Fix the *Zon* card: `sun.sun` is graphed with a 975–1050 axis (a pressure scale) | The axis does not fit the entity | `homeassistant/dashboard.yaml` |
+| 29 | Check unit of `external_voltage`: the voltage card uses an axis of 11500–14500 (mV) while the entity shows volt | Mixed units give confusing graphs and alerts | `homeassistant/dashboard.yaml`, `ttn/payload-formatter.js` |

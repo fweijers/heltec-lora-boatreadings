@@ -2,7 +2,7 @@
 //
 // The key names and units below are what the Node-RED flow in ../nodered/flow.json
 // expects: it derives the Home Assistant device class and unit from the key name
-// (temperature, humidity, pressure, *volt*, battery_level, distance).
+// (temperature, humidity, pressure, *volt*/battery, battery_level, distance).
 function decodeUplink(input) {
   var b = input.bytes;
   if (b.length !== 16) {
@@ -19,7 +19,7 @@ function decodeUplink(input) {
     temperature: i16(0) / 100,        // °C
     humidity: u16(2),                 // %
     pressure: u32(4) / 100,           // hPa (firmware sends Pa)
-    heltec_voltage: u16(8) / 1000,    // V, supply of the Heltec board
+    battery: u16(8) / 1000,           // V, supply of the Heltec board
     battery_level: u16(10),           // %, Heltec battery level
     distance: distance,               // cm to the water, 0 = no echo
     external_voltage: u16(14) / 1000  // V, boat battery via the voltage divider

@@ -1,0 +1,73 @@
+# DRAFT, untested: Home Assistant automations for the bilge. Check the thresholds and the
+# notify service before use. Paste into automations.yaml (or add them via the UI in YAML mode).
+#
+# Assumptions to confirm:
+#   - sensor.bilge_waterpeil is the water level in cm, normally about 10 cm
+#   - sensor.heltec_external_voltage is the boat battery voltage in volt
+#     (use 12000 / 12400 below when your entity reports millivolt)
+#   - notify.notify is replaced by your own notify service (for example notify.mobile_app_<phone>)
+
+- id: bilge_level_stays_high
+  alias: "Bilge: waterpeil blijft hoog"
+  description: "The pump should empty the bilge within minutes. Alert when the level stays high."
+  mode: single
+  triggers:
+    - trigger: numeric_state
+      entity_id: sensor.bilge_waterpeil
+      above: 15
+      for: "00:15:00"
+  actions:
+    - action: notify.notify
+      data:
+        title: "⚠️ Bilge staat hoog"
+        message: >
+          Waterpeil is al 15 minuten {{ states('sensor.bilge_waterpeil') }} cm
+          (normaal ~10 cm). Accuspanning: {{ states('sensor.heltec_external_voltage') }} V.
+
+- id: bilge_voltage_drops_level_stays_high
+  alias: "Bilge: accu zakt en waterpeil blijft hoog"
+  description: "Pump is running (or tries to) on a weak battery while the water does not go down."
+  mode: single
+  triggers:
+    - trigger: numeric_state
+      entity_id: sensor.bilge_waterpeil
+      above: 15
+      for: "00:10:00"
+  conditions:
+    - condition: numeric_state
+      entity_id: sensor.heltec_external_voltage
+      below: 12.4
+  actions:
+    - action: notify.notify
+      data:
+        title: "🚨 Bilge: pomp vermoedelijk kansloos"
+        message: >
+          Waterpeil {{ states('sensor.bilge_waterpeil') }} cm blijft hoog en de accu is
+          {{ states('sensor.heltec_external_voltage') }} V. Ga kijken.
+
+- id: bilge_battery_low
+  alias: "Bilge: accu laag"
+  mode: single
+  triggers:
+    - trigger: numeric_state
+      entity_id: sensor.heltec_external_voltage
+      below: 12.0
+      for: "00:30:00"
+  actions:
+    - action: notify.notify
+      data:
+        title: "🔋 Bootaccu laag"
+        message: "Accuspanning is {{ states('sensor.heltec_external_voltage') }} V."
+
+- id: bilge_sensor_silent
+  alias: "Bilge: sensor stil"
+  mode: single
+  triggers:
+    - trigger: state
+      entity_id: sensor.heltec_last_update
+      for: "00:20:00"
+  actions:
+    - action: notify.notify
+      data:
+        title: "📡 Geen data van de boot"
+        message: "Al 20 minuten geen uplink van de Heltec ontvangen."

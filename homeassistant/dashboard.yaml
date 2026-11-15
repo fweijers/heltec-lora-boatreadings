@@ -1,0 +1,92 @@
+# Lovelace dashboard "Boot" (view). Paste into the raw configuration editor of a dashboard.
+# Entity names come from the Node-RED MQTT discovery in ../nodered/flow.json.
+# sensor.bilge_waterpeil is a Home Assistant helper/template sensor (see README).
+views:
+  - title: Boot
+    sections:
+      - type: grid
+        cards:
+          - type: heading
+            heading: 📡 LoRa & Klimaat
+          - type: markdown
+            title: LoRa Gateways
+            content: >
+              {% set data = state_attr('sensor.boot_heltec_gateways',
+              'gateways') %}
+
+              {% if data %}
+
+              | Gateway | Gehoord | RSSI | SNR | Laatste ontvangst |
+
+              |---------|:-------:|:----:|:---:|-------------------|
+
+              {%- for gw in data %}
+
+              | {{ gw.gateway_id }} | {{ gw.count }}x | {{ gw.rssi }} dBm | {{
+              gw.snr }} dB | {{ gw.last_seen }} |
+
+              {%- endfor %}
+
+              {% else %}
+
+              *Nog geen data — wacht op eerste uplink*
+
+              {% endif %}
+            grid_options:
+              columns: full
+              rows: auto
+          - type: history-graph
+            grid_options:
+              columns: full
+            entities:
+              - entity: sensor.heltec_pressure
+            title: Luchtdruk (36u)
+            hours_to_show: 36
+          - type: history-graph
+            grid_options:
+              columns: full
+            entities:
+              - entity: sensor.heltec_temperature
+            title: Temperatuur (36u)
+            hours_to_show: 36
+            logarithmic_scale: false
+          - type: history-graph
+            grid_options:
+              columns: full
+            entities:
+              - entity: sensor.heltec_humidity
+            title: Luchtvochtigheid (36u)
+            hours_to_show: 36
+            logarithmic_scale: true
+          - type: history-graph
+            grid_options:
+              columns: full
+            entities:
+              - entity: sun.sun
+            title: Zon (24u)
+            hours_to_show: 24
+            min_y_axis: 975
+            max_y_axis: 1050
+          - type: heading
+            heading: ⚙️ Bilge & Accu
+          - type: history-graph
+            grid_options:
+              columns: full
+            entities:
+              - entity: sensor.heltec_external_voltage
+            title: Accuspanning boot (24u)
+            hours_to_show: 24
+            logarithmic_scale: false
+            min_y_axis: 11500
+            max_y_axis: 14500
+            fit_y_data: true
+          - type: history-graph
+            grid_options:
+              columns: full
+            entities:
+              - entity: sensor.bilge_waterpeil
+            title: Waterpeil bilge (24u)
+            hours_to_show: 24
+            min_y_axis: 0
+            max_y_axis: 30
+        column_span: 4

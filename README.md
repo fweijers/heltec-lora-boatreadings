@@ -4,6 +4,8 @@ Remote bilge monitoring for my boat: water level, battery voltage and weather, s
 
 ![The monitoring box in the bow of the boat, next to the solar panel and the charge controller](pics/CompuInBoat.JPG)
 
+![Sketch of the setup: the sensor looks down a tube that sticks into the bilge](https://github.com/user-attachments/assets/3fcaf7df-5e79-4d4f-9bc6-f95a40567a9a)
+
 ## Why this project?
 
 I found out the hard way that a bilge pump setup can falter: in my case it resulted in a sunken boat (a *sloep*, in Dutch).
@@ -96,7 +98,7 @@ The node sends one uplink every ~3 minutes (`appTxDutyCycle`), with the sensors 
 | 12–13 | Distance to water | cm (`0` = no echo) |
 | 14–15 | External (boat) battery voltage | mV |
 
-A ready-made TTN uplink decoder is in [`ttn/payload-formatter.js`](ttn/payload-formatter.js): paste it in the TTN console under *Payload formatters → Uplink → Custom JavaScript*. Its output keys (`temperature`, `humidity`, `pressure`, `heltec_voltage`, `battery_level`, `distance`, `external_voltage`) are exactly what the Node-RED flow below expects.
+A ready-made TTN uplink decoder is in [`ttn/payload-formatter.js`](ttn/payload-formatter.js): paste it in the TTN console under *Payload formatters → Uplink → Custom JavaScript*. Its output keys (`temperature`, `humidity`, `pressure`, `battery`, `battery_level`, `distance`, `external_voltage`) are exactly what the Node-RED flow below expects.
 
 ## The Things Network → Node-RED → Home Assistant
 
@@ -125,5 +127,15 @@ What the flow does with every uplink:
 3. Open the **TTN** MQTT broker node: set your TTN application as username (`<application-id>@ttn`) and the API key as password. Credentials are not part of the export, so nothing secret is stored in this repository.
 4. Open the **Home MQTT** broker node and point it to the Mosquitto broker that Home Assistant uses (the flow assumes the host name `mosquitto`).
 5. Deploy. The entities show up in Home Assistant under the device *Heltec heltec*.
+
+### Home Assistant dashboard and alerts
+
+- [`homeassistant/dashboard.yaml`](homeassistant/dashboard.yaml): the *Boot* dashboard with gateways, climate, battery voltage and bilge water level.
+- [`homeassistant/bilge-alerts.yaml`](homeassistant/bilge-alerts.yaml): draft automations (water level stays high, battery drops while the level stays high, battery low, sensor silent). Check thresholds and notify service before use.
+- `sensor.bilge_waterpeil` is a Home Assistant sensor derived from `distance`: the tube is about 45 cm long and the water level in the bilge is normally around 10 cm.
+
+## License
+
+Released into the public domain under [The Unlicense](LICENSE): use it for anything you like. The wiring diagram contains pictures of third-party parts (Heltec pinout, JSN-SR04T, battery) that are not covered by this dedication.
 
 See [`IMPROVEMENTS.md`](IMPROVEMENTS.md) for ideas on where to take this project next.
