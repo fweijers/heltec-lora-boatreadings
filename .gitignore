@@ -1,0 +1,8 @@
+# Secrets
+include/ttnparams.h
+
+# Build output / editor files
+.pio/
+build/
+.vscode/
+.DS_Store
