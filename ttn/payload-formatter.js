@@ -22,7 +22,7 @@ function decodeUplink(input) {
     battery: u16(8) / 1000,           // V, supply of the Heltec board
     battery_level: u16(10),           // %, Heltec battery level
     distance: distance,               // cm to the water, 0 = no echo
-    external_voltage: u16(14) / 1000  // V, boat battery via the voltage divider
+    external_voltage: u16(14)         // mV, boat battery via the voltage divider (converted to V in Home Assistant)
   };
   var warnings = [];
   if (distance === 0) warnings.push("No echo from distance sensor");

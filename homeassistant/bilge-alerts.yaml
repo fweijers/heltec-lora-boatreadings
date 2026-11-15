@@ -3,8 +3,8 @@
 #
 # Assumptions to confirm:
 #   - sensor.bilge_waterpeil is the water level in cm, normally about 10 cm
-#   - sensor.heltec_external_voltage is the boat battery voltage in volt
-#     (use 12000 / 12400 below when your entity reports millivolt)
+#   - sensor.heltec_external_voltage is the boat battery voltage; the TTN decoder sends millivolt.
+#     The templates below accept both millivolt (12737) and volt (12.737).
 #   - notify.notify is replaced by your own notify service (for example notify.mobile_app_<phone>)
 
 - id: bilge_level_stays_high
@@ -22,7 +22,9 @@
         title: "⚠️ Bilge staat hoog"
         message: >
           Waterpeil is al 15 minuten {{ states('sensor.bilge_waterpeil') }} cm
-          (normaal ~10 cm). Accuspanning: {{ states('sensor.heltec_external_voltage') }} V.
+          (normaal ~10 cm). Accuspanning:
+          {% set v = states('sensor.heltec_external_voltage') | float(0) %}
+          {{ (v / 1000 if v > 100 else v) | round(2) }} V.
 
 - id: bilge_voltage_drops_level_stays_high
   alias: "Bilge: accu zakt en waterpeil blijft hoog"
@@ -34,30 +36,36 @@
       above: 15
       for: "00:10:00"
   conditions:
-    - condition: numeric_state
-      entity_id: sensor.heltec_external_voltage
-      below: 12.4
+    - condition: template
+      value_template: >
+        {% set v = states('sensor.heltec_external_voltage') | float(0) %}
+        {{ 0 < (v / 1000 if v > 100 else v) < 12.4 }}
   actions:
     - action: notify.notify
       data:
         title: "🚨 Bilge: pomp vermoedelijk kansloos"
         message: >
           Waterpeil {{ states('sensor.bilge_waterpeil') }} cm blijft hoog en de accu is
-          {{ states('sensor.heltec_external_voltage') }} V. Ga kijken.
+          {% set v = states('sensor.heltec_external_voltage') | float(0) %}
+          {{ (v / 1000 if v > 100 else v) | round(2) }} V. Ga kijken.
 
 - id: bilge_battery_low
   alias: "Bilge: accu laag"
   mode: single
   triggers:
-    - trigger: numeric_state
-      entity_id: sensor.heltec_external_voltage
-      below: 12.0
+    - trigger: template
+      value_template: >
+        {% set v = states('sensor.heltec_external_voltage') | float(0) %}
+        {{ 0 < (v / 1000 if v > 100 else v) < 12.0 }}
       for: "00:30:00"
   actions:
     - action: notify.notify
       data:
         title: "🔋 Bootaccu laag"
-        message: "Accuspanning is {{ states('sensor.heltec_external_voltage') }} V."
+        message: >
+          Accuspanning is
+          {% set v = states('sensor.heltec_external_voltage') | float(0) %}
+          {{ (v / 1000 if v > 100 else v) | round(2) }} V.
 
 - id: bilge_sensor_silent
   alias: "Bilge: sensor stil"

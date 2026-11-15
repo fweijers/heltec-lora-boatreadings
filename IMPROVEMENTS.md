@@ -51,7 +51,7 @@ Prioritized ideas for this project. Items marked ✅ are already done in this re
 | 23 | Use `<application-id>@ttn` in the MQTT topic instead of the `+` wildcard | TTN only allows reading your own application; a specific topic is clearer and survives stricter broker rules |
 | 24 | Add a *no uplink for N minutes* alert on `last_update` / `uplink_interval` | The flow already collects the data; only the alert is missing |
 | 25 | Publish `uplink_interval` with `retain: true` or give it `expire_after` in the discovery config | Prevents Home Assistant from showing an old value as current after a restart |
-| 26 | ✅ Draft alerts added; still to do: confirm thresholds and test them | Includes the case "voltage drops, level stays high" | `homeassistant/bilge-alerts.yaml` |
+| 26 | ✅ Draft alerts added (thresholds confirmed: 15 cm, 12.4 V, 12.0 V); still to do: test them | Includes the case "voltage drops, level stays high" | `homeassistant/bilge-alerts.yaml` |
 | 27 | Document `sensor.bilge_waterpeil` (template sensor) in the repo | The dashboard depends on it, but its definition is not in the repo yet | `homeassistant/` |
 | 28 | Fix the *Zon* card: `sun.sun` is graphed with a 975–1050 axis (a pressure scale) | The axis does not fit the entity | `homeassistant/dashboard.yaml` |
-| 29 | Check unit of `external_voltage`: the voltage card uses an axis of 11500–14500 (mV) while the entity shows volt | Mixed units give confusing graphs and alerts | `homeassistant/dashboard.yaml`, `ttn/payload-formatter.js` |
+| 29 | Make the `external_voltage` unit explicit: the decoder sends millivolt, the discovery node announces it as `V`, and the dashboard converts it | Whoever imports the flow into a fresh Home Assistant sees e.g. `12737 V`; fix by dividing by 1000 in the decoder (and changing the dashboard axis to 11.5–14.5) or by announcing `mV` in the *MQTT Discovery* node | `ttn/`, `nodered/flow.json`, `homeassistant/dashboard.yaml` |

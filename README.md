@@ -98,7 +98,7 @@ The node sends one uplink every ~3 minutes (`appTxDutyCycle`), with the sensors 
 | 12–13 | Distance to water | cm (`0` = no echo) |
 | 14–15 | External (boat) battery voltage | mV |
 
-A ready-made TTN uplink decoder is in [`ttn/payload-formatter.js`](ttn/payload-formatter.js): paste it in the TTN console under *Payload formatters → Uplink → Custom JavaScript*. Its output keys (`temperature`, `humidity`, `pressure`, `battery`, `battery_level`, `distance`, `external_voltage`) are exactly what the Node-RED flow below expects.
+A ready-made TTN uplink decoder is in [`ttn/payload-formatter.js`](ttn/payload-formatter.js): paste it in the TTN console under *Payload formatters → Uplink → Custom JavaScript*. Its output keys (`temperature`, `humidity`, `pressure`, `battery`, `battery_level`, `distance`, `external_voltage` in mV) are exactly what the Node-RED flow below expects.
 
 ## The Things Network → Node-RED → Home Assistant
 
