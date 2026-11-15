@@ -2,6 +2,10 @@
 
 Remote bilge monitoring for my boat: water level, battery voltage and weather, sent over LoRaWAN (The Things Network) to Home Assistant.
 
+![The boat at the jetty, with the bimini up and no tarpaulin over it](pics/boat.jpg)
+
+*The reason for this project: a boat that can stay open and ready to sail, without a cover over it after every trip, because I can check the bilge remotely.*
+
 ![The monitoring box in the bow of the boat, next to the solar panel and the charge controller](pics/CompuInBoat.JPG)
 
 ![Sketch of the setup: the sensor looks down a tube that sticks into the bilge](https://github.com/user-attachments/assets/3fcaf7df-5e79-4d4f-9bc6-f95a40567a9a)
