@@ -9,7 +9,7 @@ Prioritized ideas for this project. Items marked ✅ are already done in this re
 | 1 | ✅ Keep TTN keys out of git: `ttnparams.example.h` + `.gitignore` | `ttnparams.h` was tracked, so a real AppKey could be committed by accident | `include/`, `.gitignore` |
 | 2 | ✅ TTN payload decoder | Decode the 16-byte payload in TTN itself, so Node-RED receives readable JSON and no byte-math lives in the flow | `ttn/payload-formatter.js` |
 | 3 | ✅ README with photos, wiring, payload table | Makes the project reproducible | `README.md` |
-| 4 | Export the Node-RED flow and a Home Assistant dashboard YAML | Currently the second half of the chain can't be rebuilt from the repo | `nodered/flow.json`, `homeassistant/` |
+| 4 | ✅ Node-RED flow added. Still open: export the Home Assistant dashboard YAML | The Lovelace cards can't be rebuilt from the repo yet | `nodered/flow.json`, `homeassistant/` |
 | 5 | Move `rain.PNG` from the repo root into `pics/` and compress the 3 MB photos (about 1600 px wide is plenty) | Faster README loading, smaller clone | `pics/` |
 | 6 | Add a `LICENSE` (for example MIT) | Without one, others may not reuse the project | `LICENSE` |
 
@@ -41,3 +41,13 @@ Prioritized ideas for this project. Items marked ✅ are already done in this re
 | 18 | Add a parts list with links and approximate prices | Helps anyone rebuilding it |
 | 19 | Add a photo and notes on mounting the tube and sensor | The tube position determines your measurement range |
 | 20 | Add a short "Troubleshooting" section (no join, distance always 0, voltage off) | Saves time later |
+
+## Node-RED flow
+
+| # | Proposal | Why |
+|---|----------|-----|
+| 21 | Check `key === "battery_level"` **before** `key.includes("battery")` in the *MQTT Discovery* node | At the moment `battery_level` matches the voltage branch first, so it is announced as a voltage in V instead of a battery percentage, and the `battery` branch below it is never reached |
+| 22 | Use the real device id in the *Gateway tracker* instead of the hard-coded `heltec` | The discovery topic, state topic and device name are fixed, so a second node would overwrite the first one's gateway sensor |
+| 23 | Use `<application-id>@ttn` in the MQTT topic instead of the `+` wildcard | TTN only allows reading your own application; a specific topic is clearer and survives stricter broker rules |
+| 24 | Add a *no uplink for N minutes* alert on `last_update` / `uplink_interval` | The flow already collects the data; only the alert is missing |
+| 25 | Publish `uplink_interval` with `retain: true` or give it `expire_after` in the discovery config | Prevents Home Assistant from showing an old value as current after a restart |

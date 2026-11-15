@@ -1,0 +1,217 @@
+[
+    {
+        "id": "f4f637bdcb1bfafd",
+        "type": "tab",
+        "label": "TTN Heltec",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "0e8567507f58ea5d",
+        "type": "mqtt in",
+        "z": "f4f637bdcb1bfafd",
+        "name": "TTN MQTT",
+        "topic": "v3/+/devices/+/up",
+        "qos": "2",
+        "datatype": "json",
+        "broker": "broker_ttn",
+        "nl": false,
+        "rap": false,
+        "inputs": 0,
+        "x": 120,
+        "y": 160,
+        "wires": [
+            [
+                "9ceeaacc106c95c4"
+            ]
+        ]
+    },
+    {
+        "id": "9ceeaacc106c95c4",
+        "type": "function",
+        "z": "f4f637bdcb1bfafd",
+        "name": "Extract payload",
+        "func": "let uplink = msg.payload.uplink_message || {};\nlet decoded = uplink.decoded_payload || {};\n\nlet meta = {};\nif(uplink.rx_metadata && uplink.rx_metadata[0]){\n  meta = uplink.rx_metadata[0];\n}\n\nif(meta.rssi !== undefined) decoded.rssi = meta.rssi;\nif(meta.snr !== undefined) decoded.snr = meta.snr;\nif(meta.gateway_ids && meta.gateway_ids.gateway_id){\n  decoded.gateway_id = meta.gateway_ids.gateway_id;\n}\n\nmsg.rx_metadata = uplink.rx_metadata || [];\n\nmsg.device_id = msg.payload.end_device_ids ? msg.payload.end_device_ids.device_id : \"heltec\";\nmsg.payload = decoded;\nmsg.timestamp = new Date().toISOString();\n\nreturn msg;",
+        "outputs": 1,
+        "x": 320,
+        "y": 160,
+        "wires": [
+            [
+                "f03d6e783a638003",
+                "b6761b8ac1cc776e",
+                "7a5d9762301c4aeb",
+                "b25369aa1ccd00db",
+                "83c0ea19ea8ca3fd"
+            ]
+        ]
+    },
+    {
+        "id": "f03d6e783a638003",
+        "type": "function",
+        "z": "f4f637bdcb1bfafd",
+        "name": "Publish states",
+        "func": "const dev = msg.device_id;\nconst payload = msg.payload;\nlet msgs=[];\n\nfor(const key in payload){\n  let value = payload[key];\n  msgs.push({\n    topic:`home/${dev}/${key}`,\n    payload:value,\n    retain:true\n  });\n}\n\nreturn [msgs];",
+        "outputs": 1,
+        "x": 520,
+        "y": 240,
+        "wires": [
+            [
+                "c56f459a8ad3b96a"
+            ]
+        ]
+    },
+    {
+        "id": "b6761b8ac1cc776e",
+        "type": "function",
+        "z": "f4f637bdcb1bfafd",
+        "name": "MQTT Discovery",
+        "func": "const dev = msg.device_id;\nconst payload = msg.payload;\nlet msgs = [];\n\nfor (const key in payload) {\n  let value = payload[key];\n\n  let config = {\n    name: key,\n    unique_id: `${dev}_${key}`,\n    state_topic: `home/${dev}/${key}`,\n    force_update: true,\n    device: {\n      identifiers: [dev],\n      name: `Heltec ${dev}`,\n      manufacturer: \"Heltec\",\n      model: \"CubeCell\"\n    }\n  };\n\n  // Voeg alleen state_class toe als de waarde daadwerkelijk een getal is\n  if (typeof value === 'number') {\n    config.state_class = \"measurement\";\n  }\n\n  if (key.includes(\"temp\")) {\n    config.device_class = \"temperature\";\n    config.unit_of_measurement = \"°C\";\n  }\n  else if (key.includes(\"humid\")) {\n    config.device_class = \"humidity\";\n    config.unit_of_measurement = \"%\";\n  }\n  else if (key.includes(\"press\")) {\n    config.device_class = \"pressure\";\n    config.unit_of_measurement = \"hPa\";\n  }\n  else if (key.includes(\"volt\") || key.includes(\"battery\")) {\n    config.device_class = \"voltage\";\n    config.unit_of_measurement = \"V\";\n  }\n  else if (key === \"battery_level\") {\n    config.device_class = \"battery\";\n    config.unit_of_measurement = \"%\";\n  }\n  else if (key === \"distance\") {\n    config.unit_of_measurement = \"cm\";\n  }\n  else if (key === \"rssi\") {\n    config.unit_of_measurement = \"dBm\";\n  }\n  else if (key === \"snr\") {\n    config.unit_of_measurement = \"dB\";\n  }\n\n  msgs.push({\n    topic: `homeassistant/sensor/${dev}/${key}/config`,\n    payload: JSON.stringify(config),\n    retain: true\n  });\n}\n\nreturn [msgs];\n",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 540,
+        "y": 100,
+        "wires": [
+            [
+                "d8bac917de6ff6ac"
+            ]
+        ]
+    },
+    {
+        "id": "7a5d9762301c4aeb",
+        "type": "function",
+        "z": "f4f637bdcb1bfafd",
+        "name": "Uplink interval",
+        "func": "const dev = msg.device_id;\nlet last = flow.get(`last_${dev}`)||0;\nlet now = Date.now();\nlet interval = last?Math.round((now-last)/1000):0;\nflow.set(`last_${dev}`,now);\n\nreturn [{\n  topic:`home/${dev}/uplink_interval`,\n  payload:interval,\n  retain:false\n}];",
+        "outputs": 1,
+        "x": 540,
+        "y": 320,
+        "wires": [
+            [
+                "c56f459a8ad3b96a"
+            ]
+        ]
+    },
+    {
+        "id": "b25369aa1ccd00db",
+        "type": "function",
+        "z": "f4f637bdcb1bfafd",
+        "name": "Last update",
+        "func": "return [{\n  topic:`home/${msg.device_id}/last_update`,\n  payload:msg.timestamp,\n  retain:true\n}];",
+        "outputs": 1,
+        "x": 540,
+        "y": 380,
+        "wires": [
+            [
+                "c56f459a8ad3b96a"
+            ]
+        ]
+    },
+    {
+        "id": "83c0ea19ea8ca3fd",
+        "type": "function",
+        "z": "f4f637bdcb1bfafd",
+        "name": "Gateway tracker",
+        "func": "let table = flow.get('gateway_table') || {};\nlet rxList = msg.rx_metadata || [];\nlet now = new Date().toLocaleString('nl-NL', {\n  timeZone: 'Europe/Amsterdam',\n  year: 'numeric', month: '2-digit', day: '2-digit',\n  hour: '2-digit', minute: '2-digit',\n  hour12: false\n}).replace(',', '');\n\nfor(let rx of rxList){\n  let gw_id = rx.gateway_ids ? rx.gateway_ids.gateway_id : null;\n  if(!gw_id) continue;\n\n  if(!table[gw_id]){\n    table[gw_id] = {\n      gateway_id: gw_id,\n      count: 0,\n      rssi: null,\n      snr: null,\n      last_seen: null\n    };\n  }\n\n  table[gw_id].count++;\n  table[gw_id].rssi = rx.rssi !== undefined ? rx.rssi : table[gw_id].rssi;\n  table[gw_id].snr = rx.snr !== undefined ? Math.round(rx.snr * 10) / 10 : table[gw_id].snr;\n  table[gw_id].last_seen = now;\n}\n\nflow.set('gateway_table', table);\n\nlet sorted = Object.values(table).sort((a,b) => b.count - a.count);\nlet count = sorted.length;\n\nlet discoveryMsg = {\n  topic: 'homeassistant/sensor/heltec/gateways/config',\n  payload: JSON.stringify({\n    name: 'gateways',\n    unique_id: 'heltec_gateways',\n    state_topic: 'home/heltec/gateways',\n    value_template: '{{ value_json.count }}',\n    json_attributes_topic: 'home/heltec/gateways',\n    unit_of_measurement: 'gateways',\n    icon: 'mdi:radio-tower',\n    device: {\n      identifiers: ['heltec'],\n      name: 'Heltec heltec',\n      manufacturer: 'Heltec',\n      model: 'CubeCell'\n    }\n  }),\n  retain: true\n};\n\nlet stateMsg = {\n  topic: 'home/heltec/gateways',\n  payload: JSON.stringify({\n    count: count,\n    gateways: sorted\n  }),\n  retain: true\n};\n\nreturn [[discoveryMsg, stateMsg]];",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 540,
+        "y": 480,
+        "wires": [
+            [
+                "c56f459a8ad3b96a"
+            ]
+        ]
+    },
+    {
+        "id": "c56f459a8ad3b96a",
+        "type": "mqtt out",
+        "z": "f4f637bdcb1bfafd",
+        "name": "MQTT states",
+        "broker": "broker_local",
+        "x": 800,
+        "y": 340,
+        "wires": []
+    },
+    {
+        "id": "d8bac917de6ff6ac",
+        "type": "mqtt out",
+        "z": "f4f637bdcb1bfafd",
+        "name": "MQTT discovery",
+        "topic": "",
+        "qos": "",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "broker_local",
+        "x": 820,
+        "y": 100,
+        "wires": []
+    },
+    {
+        "id": "broker_ttn",
+        "type": "mqtt-broker",
+        "name": "TTN",
+        "broker": "eu1.cloud.thethings.network",
+        "port": "8883",
+        "tls": "",
+        "clientid": "",
+        "autoConnect": true,
+        "usetls": true,
+        "protocolVersion": 4,
+        "keepalive": 15,
+        "cleansession": true,
+        "autoUnsubscribe": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthPayload": "",
+        "birthMsg": {},
+        "closeTopic": "",
+        "closePayload": "",
+        "closeMsg": {},
+        "willTopic": "",
+        "willQos": "0",
+        "willPayload": "",
+        "willMsg": {},
+        "userProps": "",
+        "sessionExpiry": ""
+    },
+    {
+        "id": "broker_local",
+        "type": "mqtt-broker",
+        "name": "Home MQTT",
+        "broker": "mosquitto",
+        "port": "1883",
+        "clientid": "",
+        "autoConnect": true,
+        "usetls": false,
+        "protocolVersion": 4,
+        "keepalive": 15,
+        "cleansession": true,
+        "autoUnsubscribe": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthPayload": "",
+        "birthMsg": {},
+        "closeTopic": "",
+        "closePayload": "",
+        "closeMsg": {},
+        "willTopic": "",
+        "willQos": "0",
+        "willPayload": "",
+        "willMsg": {},
+        "userProps": "",
+        "sessionExpiry": ""
+    }
+]
