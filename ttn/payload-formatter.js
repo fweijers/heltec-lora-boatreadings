@@ -1,4 +1,8 @@
 // TTN uplink decoder for heltec-lora-boatreadings (port 2, 16 bytes, big-endian).
+//
+// The key names and units below are what the Node-RED flow in ../nodered/flow.json
+// expects: it derives the Home Assistant device class and unit from the key name
+// (temperature, humidity, pressure, *volt*/battery, battery_level, distance).
 function decodeUplink(input) {
   var b = input.bytes;
   if (b.length !== 16) {
@@ -12,13 +16,13 @@ function decodeUplink(input) {
 
   var distance = u16(12);
   var data = {
-    temperature_c: i16(0) / 100,
-    humidity_pct: u16(2),
-    pressure_hpa: u32(4) / 100,
-    heltec_voltage_mv: u16(8),
-    heltec_battery_pct: u16(10),
-    distance_cm: distance,
-    external_voltage_v: u16(14) / 1000
+    temperature: i16(0) / 100,        // °C
+    humidity: u16(2),                 // %
+    pressure: u32(4) / 100,           // hPa (firmware sends Pa)
+    battery: u16(8) / 1000,           // V, supply of the Heltec board
+    battery_level: u16(10),           // %, Heltec battery level
+    distance: distance,               // cm to the water, 0 = no echo
+    external_voltage: u16(14)         // mV, boat battery via the voltage divider (converted to V in Home Assistant)
   };
   var warnings = [];
   if (distance === 0) warnings.push("No echo from distance sensor");
