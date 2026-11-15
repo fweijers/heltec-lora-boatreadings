@@ -1,0 +1,12 @@
+# Template sensor: water level in the bilge in cm.
+# The distance sensor sits 55 cm above the bottom of the bilge, so level = 55 - distance.
+# Normal level is about 10 cm (distance ~45 cm). Never below 0.
+# Add under `template:` in configuration.yaml, or create it as a template helper in the UI
+# (Settings → Devices & services → Helpers → Template → Sensor) with the same state template.
+template:
+  - sensor:
+      - name: "Bilge waterpeil"
+        unique_id: bilge_waterpeil
+        unit_of_measurement: "cm"
+        state_class: measurement
+        state: "{{ [55 - states('sensor.heltec_distance') | float(0), 0] | max }}"

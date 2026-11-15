@@ -132,7 +132,7 @@ What the flow does with every uplink:
 
 - [`homeassistant/dashboard.yaml`](homeassistant/dashboard.yaml): the *Boot* dashboard with gateways, climate, battery voltage and bilge water level.
 - [`homeassistant/bilge-alerts.yaml`](homeassistant/bilge-alerts.yaml): draft automations (water level stays high, battery drops while the level stays high, battery low, sensor silent). Check thresholds and notify service before use.
-- `sensor.bilge_waterpeil` is a Home Assistant sensor derived from `distance`: the tube is about 45 cm long and the water level in the bilge is normally around 10 cm.
+- [`homeassistant/bilge-waterpeil.yaml`](homeassistant/bilge-waterpeil.yaml): the template sensor `sensor.bilge_waterpeil` = 55 − `distance` (cm, never below 0). The water level in the bilge is normally around 10 cm.
 
 ## License
 
